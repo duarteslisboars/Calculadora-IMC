@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de IMC com Histórico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #2575fc;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            border-color: #2575fc;
+            outline: none;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            margin-left: 10px;
+        }
+        
+        .resultado {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .classificacao {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: normal;
+        }
+        
+        .tabela-imc {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .tabela-imc th, .tabela-imc td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .tabela-imc th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .tabela-imc tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .historico {
+            margin-top: 30px;
+        }
+        
+        .historico-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+        }
+        
+        .historico-item:last-child {
+            border-bottom: none;
+        }
+        
+        .historico-data {
+            font-weight: 600;
+            color: #2575fc;
+        }
+        
+        .historico-imc {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .historico-classificacao {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .empty-history {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .btn-container {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .btn-clear {
+                margin-left: 0;
+            }
+            
+            .historico-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .historico-imc, .historico-classificacao {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Calculadora de IMC</h1>
+            <p class="subtitle">Calcule seu Índice de Massa Corporal e acompanhe seu histórico</p>
+        </header>
+        
+        <div class="card">
+            <h2 class="card-title">Calculadora</h2>
+            <div class="form-group">
+                <label for="peso">Peso (kg):</label>
+                <input type="number" id="peso" step="0.1" placeholder="Ex: 70.5" min="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="altura">Altura (m):</label>
+                <input type="number" id="altura" step="0.01" placeholder="Ex: 1.75" min="0">
+            </div>
+            
+            <div class="btn-container">
+                <button class="btn" onclick="calcularIMC()">Calcular IMC</button>
+                <button class="btn btn-clear" onclick="limparHistorico()">Limpar Histórico</button>
+            </div>
+            
+            <div id="resultado" class="resultado"></div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">Classificação do IMC</h2>
+            <table class="tabela-imc">
+                <thead>
+                    <tr>
+                        <th>IMC</th>
+                        <th>Classificação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Abaixo de 18,5</td>
+                        <td>Abaixo do peso</td>
+                    </tr>
+                    <tr>
+                        <td>18,5 - 24,9</td>
+                        <td>Peso normal</td>
+                    </tr>
+                    <tr>
+                        <td>25 - 29,9</td>
+                        <td>Sobrepeso</td>
+                    </tr>
+                    <tr>
+                        <td>30 - 34,9</td>
+                        <td>Obesidade Grau I</td>
+                    </tr>
+                    <tr>
+                        <td>35 - 39,9</td>
+                        <td>Obesidade Grau II</td>
+                    </tr>
+                    <tr>
+                        <td>Acima de 40</td>
+                        <td>Obesidade Grau III</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">Histórico de Cálculos</h2>
+            <div id="historico" class="historico">
+                <!-- Histórico será preenchido dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Carregar histórico ao iniciar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarHistorico();
+        });
+        
+        function calcularIMC() {
+            // Obter valores dos inputs
+            const peso = parseFloat(document.getElementById('peso').value);
+            const altura = parseFloat(document.getElementById('altura').value);
+            const resultadoDiv = document.getElementById('resultado');
+            
+            // Validar os dados
+            if (!peso || !altura || peso <= 0 || altura <= 0) {
+                alert('Por favor, insira valores válidos para peso e altura.');
+                return;
+            }
+            
+            // Calcular IMC
+            const imc = peso / (altura * altura);
+            
+            // Determinar classificação e cor
+            const { classificacao, cor } = classificarIMC(imc);
+            
+            // Exibir resultado
+            resultadoDiv.innerHTML = `
+                Seu IMC é: <strong>${imc.toFixed(2)}</strong>
+                <div class="classificacao">Classificação: ${classificacao}</div>
+            `;
+            resultadoDiv.style.backgroundColor = cor + '20';
+            resultadoDiv.style.color = cor;
+            resultadoDiv.style.borderLeft = `5px solid ${cor}`;
+            resultadoDiv.style.display = 'block';
+            
+            // Salvar no histórico
+            salvarNoHistorico(peso, altura, imc, classificacao, cor);
+        }
+        
+        function classificarIMC(imc) {
+            let classificacao = '';
+            let cor = '';
+            
+            if (imc < 18.5) {
+                classificacao = 'Abaixo do peso';
+                cor = '#ffc107';
+            } else if (imc < 25) {
+                classificacao = 'Peso normal';
+                cor = '#4CAF50';
+            } else if (imc < 30) {
+                classificacao = 'Sobrepeso';
+                cor = '#FF9800';
+            } else if (imc < 35) {
+                classificacao = 'Obesidade Grau I';
+                cor = '#F44336';
+            } else if (imc < 40) {
+                classificacao = 'Obesidade Grau II';
+                cor = '#D32F2F';
+            } else {
+                classificacao = 'Obesidade Grau III';
+                cor = '#B71C1C';
+            }
+            
+            return { classificacao, cor };
+        }
+        
+        function salvarNoHistorico(peso, altura, imc, classificacao, cor) {
+            // Obter histórico atual
+            let historico = JSON.parse(localStorage.getItem('historicoIMC')) || [];
+            
+            // Criar novo registro
+            const novoRegistro = {
+                data: new Date().toLocaleString('pt-BR'),
+                peso: peso,
+                altura: altura,
+                imc: imc.toFixed(2),
+                classificacao: classificacao,
+                cor: cor
+            };
+            
+            // Adicionar ao início do array (mais recente primeiro)
+            historico.unshift(novoRegistro);
+            
+            // Manter apenas os últimos 10 registros
+            if (historico.length > 10) {
+                historico = historico.slice(0, 10);
+            }
+            
+            // Salvar no localStorage
+            localStorage.setItem('historicoIMC', JSON.stringify(historico));
+            
+            // Atualizar exibição do histórico
+            carregarHistorico();
+        }
+        
+        function carregarHistorico() {
+            const historicoDiv = document.getElementById('historico');
+            const historico = JSON.parse(localStorage.getItem('historicoIMC')) || [];
+            
+            if (historico.length === 0) {
+                historicoDiv.innerHTML = '<div class="empty-history">Nenhum cálculo realizado ainda</div>';
+                return;
+            }
+            
+            let html = '';
+            historico.forEach(registro => {
+                html += `
+                    <div class="historico-item">
+                        <div class="historico-data">${registro.data}</div>
+                        <div class="historico-imc">IMC: ${registro.imc}</div>
+                        <div class="historico-classificacao" style="background-color: ${registro.cor + '30'}; color: ${registro.cor};">
+                            ${registro.classificacao}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            historicoDiv.innerHTML = html;
+        }
+        
+        function limparHistorico() {
+            if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+                localStorage.removeItem('historicoIMC');
+                carregarHistorico();
+            }
+        }
+        
+        // Permitir calcular pressionando Enter
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                calcularIMC();
+            }
+        });
+    </script>
+</body>
+</html>
